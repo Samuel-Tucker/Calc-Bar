@@ -15,8 +15,9 @@ final class CalculatorPanelController: NSWindowController, NSWindowDelegate {
     }
 
     private let calculator: CalculatorEngine
-    private let displayLabel = NSTextField(labelWithString: "0")
+    private let displayLabel = CopyableDisplayField(labelWithString: "0")
     private let displayContainer = NSView()
+    private let copyButton = NSButton()
     private let pinButton = NSButton()
     private let keyView: CalculatorKeyView
     private var buttonsByKey: [String: CalculatorButton] = [:]
@@ -60,6 +61,9 @@ final class CalculatorPanelController: NSWindowController, NSWindowDelegate {
 
         calculator.onChange = { [weak self] in
             self?.updateDisplay()
+        }
+        displayLabel.onDoubleClick = { [weak self] in
+            self?.copyOutput()
         }
         keyView.onKeyboardAction = { [weak self] key in
             self?.flashKey(key)
@@ -219,15 +223,25 @@ final class CalculatorPanelController: NSWindowController, NSWindowDelegate {
         displayLabel.font = .monospacedDigitSystemFont(ofSize: 32, weight: .light)
         displayLabel.textColor = .white
         displayLabel.backgroundColor = .clear
+        displayLabel.isBordered = false
+        displayLabel.isEditable = false
+        displayLabel.isSelectable = true
+        displayLabel.focusRingType = .none
         displayLabel.lineBreakMode = .byTruncatingHead
         displayLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         displayLabel.translatesAutoresizingMaskIntoConstraints = false
+        configureCopyButton()
 
+        container.addSubview(copyButton)
         container.addSubview(displayLabel)
 
         NSLayoutConstraint.activate([
             container.heightAnchor.constraint(equalToConstant: 60),
-            displayLabel.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 12),
+            copyButton.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 8),
+            copyButton.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            copyButton.widthAnchor.constraint(equalToConstant: 22),
+            copyButton.heightAnchor.constraint(equalToConstant: 22),
+            displayLabel.leadingAnchor.constraint(equalTo: copyButton.trailingAnchor, constant: 6),
             displayLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -12),
             displayLabel.centerYAnchor.constraint(equalTo: container.centerYAnchor, constant: 1)
         ])
@@ -238,6 +252,7 @@ final class CalculatorPanelController: NSWindowController, NSWindowDelegate {
     private func updateDisplay() {
         displayLabel.stringValue = calculator.outputText
         displayContainer.layer?.backgroundColor = displayBackgroundColor.cgColor
+        updateCopyButtonTint()
     }
 
     private var displayBackgroundColor: NSColor {
@@ -249,6 +264,10 @@ final class CalculatorPanelController: NSWindowController, NSWindowDelegate {
 
     @objc private func closeButtonPressed() {
         hide()
+    }
+
+    @objc private func copyButtonPressed() {
+        copyOutput()
     }
 
     @objc private func headerMenuButtonPressed(_ sender: NSButton) {
@@ -264,6 +283,44 @@ final class CalculatorPanelController: NSWindowController, NSWindowDelegate {
         if isPinned, let window {
             savePinnedOrigin(window.frame.origin)
         }
+    }
+
+    private func configureCopyButton() {
+        copyButton.isBordered = false
+        copyButton.imagePosition = .imageOnly
+        copyButton.target = self
+        copyButton.action = #selector(copyButtonPressed)
+        copyButton.wantsLayer = true
+        copyButton.layer?.cornerRadius = 7
+        copyButton.layer?.cornerCurve = .continuous
+        copyButton.layer?.backgroundColor = NSColor.white.withAlphaComponent(0.10).cgColor
+        copyButton.translatesAutoresizingMaskIntoConstraints = false
+        copyButton.image = NSImage(systemSymbolName: "doc.on.doc", accessibilityDescription: "Copy output")
+        updateCopyButtonTint()
+    }
+
+    private func copyOutput() {
+        let output = calculator.outputText
+        guard !output.isEmpty else { return }
+
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(output, forType: .string)
+        flashCopyButton()
+        window?.makeFirstResponder(keyView)
+    }
+
+    private func flashCopyButton() {
+        let original = copyButton.layer?.backgroundColor
+        copyButton.layer?.backgroundColor = NSColor.white.withAlphaComponent(0.30).cgColor
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [weak self] in
+            self?.copyButton.layer?.backgroundColor = original
+        }
+    }
+
+    private func updateCopyButtonTint() {
+        copyButton.contentTintColor = calculator.isComplete
+            ? NSColor.white.withAlphaComponent(0.90)
+            : NSColor.white.withAlphaComponent(0.64)
     }
 
     private func makeButtonPad() -> NSView {
@@ -564,6 +621,17 @@ private final class CalculatorPanel: NSPanel {
 
 private final class DraggableVisualEffectView: NSVisualEffectView {
     override var mouseDownCanMoveWindow: Bool { true }
+}
+
+private final class CopyableDisplayField: NSTextField {
+    var onDoubleClick: (() -> Void)?
+
+    override func mouseDown(with event: NSEvent) {
+        super.mouseDown(with: event)
+        if event.clickCount == 2 {
+            onDoubleClick?()
+        }
+    }
 }
 
 private enum DefaultsKey {

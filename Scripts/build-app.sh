@@ -18,4 +18,6 @@ if [[ -f "$ROOT_DIR/Resources/CalcBar.icns" ]]; then
   cp "$ROOT_DIR/Resources/CalcBar.icns" "$RESOURCES_DIR/CalcBar.icns"
 fi
 
+codesign --force --deep --sign - "$APP_DIR"
+
 echo "$APP_DIR"

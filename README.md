@@ -46,6 +46,8 @@ The app bundle is written to:
 .build/Calc Bar.app
 ```
 
+The local bundle is ad-hoc signed with `codesign --sign -`, so it works well for local builds and testing. It is not notarized, so other Macs may still show a Gatekeeper warning.
+
 ## Controls
 
 Open the calculator and click `Calc Bar ▾` in the header for the built-in cheat sheet.
@@ -75,6 +77,20 @@ Useful commands:
 swift build
 swift run CalcBar
 Scripts/build-app.sh
+Scripts/package-release.sh 0.1.0
+```
+
+Package a GitHub Release zip:
+
+```sh
+Scripts/package-release.sh 0.1.0
+```
+
+That writes:
+
+```text
+.build/dist/Calc-Bar-0.1.0-macos.zip
+.build/dist/Calc-Bar-0.1.0-macos.zip.sha256
 ```
 
 Regenerate the app icon after changing `Scripts/generate-icon.swift`:
@@ -119,8 +135,20 @@ Things worth improving:
 - Preferences for custom hotkeys.
 - Light/dark themes.
 - Calculation history.
-- Signed release builds.
-- A small installer or Homebrew cask.
+- Developer ID signing and notarization.
+- A Homebrew cask once release zips are published.
+
+## Distribution Notes
+
+You can publish release zips without an Apple Developer account:
+
+```sh
+Scripts/package-release.sh 0.1.0
+```
+
+Attach the generated zip from `.build/dist/` to a GitHub Release.
+
+Without an Apple Developer account, the app can be ad-hoc signed but not Developer ID signed or notarized. That means users may need to allow it manually in macOS Privacy & Security after downloading.
 
 ## License
 

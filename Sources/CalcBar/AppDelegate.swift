@@ -14,7 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         controller.onQuit = { NSApp.terminate(nil) }
         panelController = controller
 
-        hotKey = GlobalHotKey(keyCode: KeyCode.c, modifiers: [.control, .option]) { [weak self] in
+        hotKey = GlobalHotKey(keyCode: KeyCode.c, modifiers: [.option]) { [weak self] in
             self?.toggleCalculator()
         }
     }

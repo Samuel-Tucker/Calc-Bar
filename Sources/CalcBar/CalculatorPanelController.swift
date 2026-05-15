@@ -515,7 +515,7 @@ final class CalculatorPanelController: NSWindowController, NSWindowDelegate {
         stack.addArrangedSubview(separator())
 
         let rows = [
-            ("Open / close", "Control + Option + C"),
+            ("Open / close", "Option + C"),
             ("Close panel", "Esc or ×"),
             ("Keep on top", "Pin button"),
             ("Move pinned", "Drag the panel"),
@@ -646,7 +646,7 @@ enum ShortcutMenuFactory {
         let menu = NSMenu()
         menu.addItem(disabled("Shortcuts"))
         menu.addItem(.separator())
-        menu.addItem(disabled("Open / close:  Control + Option + C"))
+        menu.addItem(disabled("Open / close:  Option + C"))
         menu.addItem(disabled("Close panel:  Esc or ×"))
         menu.addItem(disabled("Keep on top:  Pin button"))
         menu.addItem(disabled("Move pinned:  Drag the panel"))

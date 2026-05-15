@@ -11,7 +11,7 @@ Calc Bar opens with a global hotkey, accepts real numpad input, can stay pinned 
 ## What It Does
 
 - Lives in the macOS menu bar with no Dock icon.
-- Opens and closes with `Control + Option + C`.
+- Opens and closes with `Option + C`.
 - Works with the number row and numeric keypad.
 - Shows expressions as you type, like `5+5`, then shows the result after `Enter`.
 - Turns the output box green when a calculation is complete.
@@ -54,7 +54,7 @@ Open the calculator and click `Calc Bar ▾` in the header for the built-in chea
 
 | Action | Shortcut |
 | --- | --- |
-| Open / close | `Control + Option + C` |
+| Open / close | `Option + C` |
 | Close panel | `Esc` or `×` |
 | Keep on top | Pin button |
 | Move pinned calculator | Drag the panel |

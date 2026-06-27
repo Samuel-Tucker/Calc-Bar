@@ -18,35 +18,43 @@ Calc Bar opens with a global hotkey, accepts real numpad input, can stay pinned 
 - Can be pinned so it stays above other windows and apps.
 - Can be dragged around the screen when pinned.
 
-## Quick Start
+## Install
 
-Clone the repo:
+Calc Bar isn't notarized — there's no paid Apple Developer account behind it — so a freshly downloaded copy trips Gatekeeper on first launch. Any of the routes below gets you running. Once it's installed, press `Option + C` to summon the calculator.
+
+### One line (recommended)
+
+Downloads the latest release, clears the quarantine flag and installs it to your Applications folder:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/Samuel-Tucker/Calc-Bar/main/Scripts/install.sh | bash
+```
+
+### Manual download
+
+1. Download `Calc-Bar-x.y.z-macos.zip` from the [latest release](https://github.com/Samuel-Tucker/Calc-Bar/releases/latest) and unzip it.
+2. Move `Calc Bar.app` to `/Applications`.
+3. Clear the quarantine flag, then open it normally:
+
+   ```sh
+   xattr -dr com.apple.quarantine "/Applications/Calc Bar.app"
+   ```
+
+   On macOS Sequoia and later there's no right-click → Open shortcut any more, so if you skip that command you'll instead have to open **System Settings → Privacy & Security** and click **Open Anyway** after the first launch is blocked.
+
+### Build from source
+
+No Gatekeeper prompts at all — locally built apps are never quarantined. Needs the Swift toolchain (Xcode or the Command Line Tools):
 
 ```sh
 git clone https://github.com/Samuel-Tucker/Calc-Bar.git
 cd Calc-Bar
-```
-
-Run it during development:
-
-```sh
-swift run CalcBar
-```
-
-Build a `.app` bundle:
-
-```sh
-Scripts/build-app.sh
+swift run CalcBar          # run it straight away
+Scripts/build-app.sh       # or build a .app bundle into .build/
 open ".build/Calc Bar.app"
 ```
 
-The app bundle is written to:
-
-```text
-.build/Calc Bar.app
-```
-
-The local bundle is ad-hoc signed with `codesign --sign -`, so it works well for local builds and testing. It is not notarized, so other Macs may still show a Gatekeeper warning.
+The built bundle is ad-hoc signed with `codesign --sign -`. That's fine for your own machine, but it isn't notarized, so copies you send to other Macs still need one of the steps above.
 
 ## Controls
 
@@ -146,9 +154,18 @@ You can publish release zips without an Apple Developer account:
 Scripts/package-release.sh 0.1.0
 ```
 
-Attach the generated zip from `.build/dist/` to a GitHub Release.
+That writes `Calc-Bar-0.1.0-macos.zip` (plus a `.sha256`) to `.build/dist/`. Attach both to a GitHub Release:
 
-Without an Apple Developer account, the app can be ad-hoc signed but not Developer ID signed or notarized. That means users may need to allow it manually in macOS Privacy & Security after downloading.
+```sh
+gh release create v0.1.0 \
+  .build/dist/Calc-Bar-0.1.0-macos.zip \
+  .build/dist/Calc-Bar-0.1.0-macos.zip.sha256 \
+  --title "Calc Bar 0.1.0" --generate-notes
+```
+
+`Scripts/install.sh` always pulls the **latest** release, so the one-line installer in [Install](#install) starts working as soon as a release exists, and keeps pointing at the newest one.
+
+Without an Apple Developer account the app can be ad-hoc signed but not Developer ID signed or notarized — hence the quarantine-clearing step the installer does for users. The checksum file lets `install.sh` verify the download before it touches Applications.
 
 ## License
 
